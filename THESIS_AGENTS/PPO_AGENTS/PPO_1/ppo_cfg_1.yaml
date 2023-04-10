@@ -1,0 +1,31 @@
+folders:
+  parent_dir: "./results/"
+  model_name: "dummy-agent-1"
+
+settings:
+  game_id: "sfiii3n"               # The game identifier (e.g., "doapp" for Dead or Alive++)
+  characters: "Ryu"           # The agent's character in the game (e.g., "Kasumi")
+  difficulty: 4                  # Difficulty level of the game
+  step_ratio: 6                  # Ratio of game frames per agent step
+  frame_shape: !!python/tuple [128, 128, 1] # The shape of the game frame to be fed as input to the agent (128x128 grayscale image)
+  continue_game: 0.0             # Probability of continuing the game after an episode is finished
+  action_space: "discrete"       # The type of action space to use (e.g., "discrete")
+  attack_but_combination: false  # Whether or not to use attack button combinations
+  char_outfits: 2                # Number of character outfits to use in the game
+  player: "Random"               # The type of opponent character (e.g., "Random")
+  show_final: true              # Whether or not to display the final game screen
+
+wrappers_settings:
+  frame_stack: 3                # Number of consecutive frames to stack as input for the agent
+  dilation: 1                   # Frame dilation rate (skip factor)
+  actions_stack: 9              # Number of past actions to include in the input (set to 0 for a dummy agent)
+  reward_normalization: true   # Whether or not to normalize rewards (set to false for a simple setup)
+  scale: true                  # Whether or not to scale input values (set to false for a simple setup)
+  exclude_image_scaling: true   # Whether or not to exclude image scaling
+  flatten: true                # Whether or not to flatten input features (set to false for a simple setup)
+  filter_keys: [
+      "stage",
+      "P1_ownHealth",
+      "P1_oppHealth",
+    ]               # An empty list of keys for filtering the observations dictionary (no filtering)
+
