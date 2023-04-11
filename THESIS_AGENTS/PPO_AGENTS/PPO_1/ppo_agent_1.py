@@ -6,11 +6,12 @@ import numpy as np
 from diambra.arena.stable_baselines3.make_sb3_env import make_sb3_env
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import BaseCallback
-from stable_baselines3.common.callbacks import ProgressBarCallback
+from diambra.arena.stable_baselines3.sb3_utils import linear_schedule
+
+from pathlib import Path
 
 
-# Creating a custom callback on the model to save its logs every 1000 steps in tensorboard
-class TensorBoardCallBack(BaseCallback):
+class AutoSave(BaseCallback):
     """
     Callback for saving a model, it is saved every ``check_freq`` steps
 
@@ -19,22 +20,25 @@ class TensorBoardCallBack(BaseCallback):
     :param verbose: (int)
     """
 
-    def __init__(self, log_dir: str, check_freq: int, verbose=1):
-        super(TensorBoardCallBack, self).__init__(verbose)
-        self.log_dir = log_dir
-        self.check_freq = check_freq
+    def __init__(self, check_freq: int, num_envs: int, save_path: str, verbose=1):
+        super(AutoSave, self).__init__(verbose)
+        self.check_freq = int(check_freq / num_envs)
+        self.num_envs = num_envs
+        self.save_path_base = os.path.join(save_path, "autosave_")
 
     def _on_step(self) -> bool:
         if self.n_calls % self.check_freq == 0:
             if self.verbose > 0:
-                print("Saving latest model to {}".format(self.log_dir))
-                # Save the agent
-                self.model.save(os.path.join(
-                    self.log_dir, f"check_point_{self.n_calls}"))
+                print("Saving latest model to {}".format(self.save_path_base))
+            # Save the agent
+            self.model.save(
+                os.path.join(self.save_path_base, f"{str(self.n_calls * self.num_envs)}"))
+
         return True
 
 
-cfg_file = r"C:\Users\Usuario\Desktop\UNI\TESIS\THESIS_AGENTS\PPO_AGENTS\PPO_1\ppo_cfg_1.yaml"
+# Loading the parameters from the yaml file
+cfg_file = r"C:\Users\USER\Desktop\UNI\TESIS\RL-Agents-on-Fighting-Games\THESIS_AGENTS\PPO_AGENTS\PPO_1\ppo_cfg_1.yaml"
 with open(cfg_file, "r") as yaml_file:
     params = yaml.load(yaml_file, Loader=yaml.FullLoader)
 
@@ -46,25 +50,31 @@ time_dep_seed = 42  # You can use any fixed or time-dependent seed value
 env, num_envs = make_sb3_env(
     params["settings"]["game_id"], settings, wrappers_settings, seed=time_dep_seed)
 
+log_dir = r".\ppo_1_tensorboard_logs"
 agent = PPO("MultiInputPolicy", env, verbose=1,
-            tensorboard_log=r"./ppo_1_tensorboard_logs/")
+            tensorboard_log=log_dir, n_steps=2048, batch_size=64, n_epochs=10)
 
-log_dir = r"./ppo_1_tensorboard_logs/"
+
 os.makedirs(log_dir, exist_ok=True)
-callback = TensorBoardCallBack(log_dir, 1000)
+# callback = TensorBoardCallBack(log_dir, 1000)
 print("Policy architecture:")
 print(agent.policy)
-agent.learn(total_timesteps=1000, callback=callback, progress_bar=True)
 
+auto_save_callback = AutoSave(check_freq=100000, num_envs=num_envs,
+                              save_path=os.path.join(log_dir, f"check_point_"))
+
+# Train the agennt
+agent.learn(total_timesteps=2000000,
+            callback=auto_save_callback, progress_bar=True)
 
 # replace later the one with iteration of training
-agent.save(f"./TRAINED_MODELS/ppo_1_model_{1}")
+agent.save(f"./TRAINED_MODELS/ppo_1_model_{2}M")
 
 
 # Checking statement to see if theres a saved model
 # If there is, load it
-if os.path.exists("./TRAINED_MODELS/ppo_1_model_{1}.zip"):
-    agent = PPO.load("./TRAINED_MODELS/ppo_1_model_{1}", env=env)
+if os.path.exists("./TRAINED_MODELS/ppo_1_model_{2}M.zip"):
+    agent = PPO.load("./TRAINED_MODELS/ppo_1_model_{2}M", env=env)
 
 
 obs = env.reset()
