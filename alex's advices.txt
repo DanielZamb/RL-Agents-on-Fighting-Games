@@ -1,0 +1,35 @@
+-8 containers or more
+-remove 6 stacks (12 stack actions)
+-maybe tune the model PPO sb3
+-plateu is common afeter loading
+
+-can test on other difficulty levels
+-incremental changes (bit by bit)
+-off policy models (leverage past exp---> replay buffer)
+ - learner on an container
+ - exp in another container(rb)
+
+replay buffer --> going to the RAM define the size
+DQN<--
+SAC<--
+
+- RL LIB SAC RLIB --> DISCRETE
+- RL LIB A3C RLIB --> DISCRETE
+
+leverage imitation learning! <--- supervised learning (bootstart)
+make network figth against the ppo
+users data into network!!!!
+behavioural cloning
+
+so in off policy, users play wouldw work
+
+the data playing
+
+REWARD FUNCTION--> DENSE already good enough 
+	- maybe a fast hitting agent(?) --> agresive strategy
+ppo settings --> filter keys more params (incremental)
+
+Regarding Data:
+how many episodes and how big
+
+multidiscrete--> big action space
