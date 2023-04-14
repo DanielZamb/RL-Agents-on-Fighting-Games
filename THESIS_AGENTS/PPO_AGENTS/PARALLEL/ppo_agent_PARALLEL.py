@@ -77,29 +77,39 @@ def train_evaluate_agent():
     n_epochs = ppo_settings["n_epochs"]
     n_steps = ppo_settings["n_steps"]
 
-    agent = PPO("MultiInputPolicy", env, verbose=1,
-                gamma=gamma, batch_size=batch_size,
-                n_epochs=n_epochs, n_steps=n_steps,
-                learning_rate=learning_rate, clip_range=clip_range,
-                clip_range_vf=clip_range_vf, policy_kwargs=policy_kwargs,
-                tensorboard_log=log_dir)
+    lastone = r"C:\Users\USER\Desktop\UNI\TESIS\RL-Agents-on-Fighting-Games\THESIS_AGENTS\PPO_AGENTS\PARALLEL\ppo_parallel_tensorboard_logs\check_point_\autosave_\1500000.zip"
+    if os.path.exists(lastone):
+        agent = PPO.load(lastone, env=env,
+                         gamma=gamma, learning_rate=learning_rate, clip_range=clip_range,
+                         clip_range_vf=clip_range_vf, policy_kwargs=policy_kwargs,
+                         tensorboard_log=log_dir)
+        print(f"Loaded model from {lastone}")
+    else:
+        agent = PPO("MultiInputPolicy", env, verbose=1,
+                    gamma=gamma, batch_size=batch_size,
+                    n_epochs=n_epochs, n_steps=n_steps,
+                    learning_rate=learning_rate, clip_range=clip_range,
+                    clip_range_vf=clip_range_vf, policy_kwargs=policy_kwargs,
+                    tensorboard_log=log_dir)
+
     print("Policy architecture:")
     print(agent.policy)
 
     auto_save_callback = AutoSave(check_freq=100000, num_envs=num_envs,
-                                  save_path=os.path.join(log_dir, f"check_point_"))
+                                  save_path=os.path.join(log_dir, f"check_point_1.5M"))
 
     # Train the agennt
     time_steps = ppo_settings["time_steps"]
-    agent.learn(total_timesteps=time_steps, callback=auto_save_callback)
+    agent.learn(total_timesteps=1000000, callback=auto_save_callback)
 
     # replace later the one with iteration of training
-    agent.save(f"./TRAINED_MODELS/ppo_parallel_model_{2}M")
+    agent.save(f"./TRAINED_MODELS/ppo_parallel_model_{2.5}M")
 
     # Checking statement to see if theres a saved model
     # If there is, load it
-    if os.path.exists("./TRAINED_MODELS/ppo_parallel_model_{2}M.zip"):
-        agent = PPO.load("./TRAINED_MODELS/ppo_parallel_model_{2}M", env=env)
+    if os.path.exists(f"./TRAINED_MODELS/ppo_parallel_model_{2.5}M.zip"):
+        agent = PPO.load(
+            f"./TRAINED_MODELS/ppo_parallel_model_{2.5}M", env=env)
 
     observation = env.reset()
     cumulative_reward = [0.0 for _ in range(num_envs)]
