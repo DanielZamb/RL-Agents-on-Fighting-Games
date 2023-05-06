@@ -13,12 +13,12 @@ settings:
   attack_but_combination: false  # Whether or not to use attack button combinations
   char_outfits: 2                # Number of character outfits to use in the game
   player: "Random"               # The type of opponent character (e.g., "Random")
-  show_final: true              # Whether or not to display the final game screen
+  show_final: false              # Whether or not to display the final game screen
 
 wrappers_settings:
-  frame_stack: 6                # Number of consecutive frames to stack as input for the agent
+  frame_stack: 4 #--->4, was 6                # Number of consecutive frames to stack as input for the agent
   dilation: 1                   # Frame dilation rate (skip factor)
-  actions_stack: 18              # Number of past actions to include in the input (set to 0 for a dummy agent)
+  actions_stack: 12  #--- was 18            # Number of past actions to include in the input (set to 0 for a dummy agent)
   reward_normalization: true   # Whether or not to normalize rewards (set to false for a simple setup)
   scale: true                  # Whether or not to scale input values (set to false for a simple setup)
   exclude_image_scaling: true   # Whether or not to exclude image scaling
@@ -49,5 +49,5 @@ ppo_settings:
   batch_size: 256 #8 #nminibatches gave different batch size depending on the number of environments: batch_size = (n_steps * n_envs) // nminibatches
   n_epochs: 4
   n_steps: 2048
-  autosave_freq: 256
-  time_steps: 500000
+  autosave_freq: 5000000
+  time_steps: 30000000
