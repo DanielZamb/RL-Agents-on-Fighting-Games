@@ -1,23 +1,13 @@
-import diambra.arena
 from diambra.arena.ray_rllib.make_ray_env import DiambraArena, preprocess_ray_config
 from ray.rllib.algorithms.a3c import A3C
-from ray.rllib.agents.callbacks import DefaultCallbacks
+
 from ray.tune.logger import pretty_print
 
-class AutoSave(DefaultCallbacks):
-    def on_train_result(self, trainer, result):
-        step = result["training_iteration"]
-        if step % 5000000 == 0:  # Save every 2 steps.
-            checkpoint = trainer.save()
-            print(f"Checkpoint saved at {checkpoint} at step {step}")
 
-
-
-if __name__ == "__main__":
-
+def main():
     # Settings
     settings = {}
-    settings["hardcore"] = False
+    settings["hardcore"] = True
     settings["frame_shape"] = (84, 84, 1)
     settings["characters"] = "Ryu"
     settings["difficulty"] =  4
@@ -30,7 +20,6 @@ if __name__ == "__main__":
     settings["player"] = "Random"
     settings["char_outfits"] = 2
 
-    # Wrappers Settings
     wrappers_settings = {}
     wrappers_settings["reward_normalization"] = True
     wrappers_settings["actions_stack"] = 12
@@ -45,13 +34,6 @@ if __name__ == "__main__":
                                              'P1_oppSuperType', 'P1_oppWins', 'P1_ownChar', 'P1_ownChar1', 'P1_ownHealth', 
                                              'P1_ownSide', 'P1_ownStunBar', 'P1_ownStunned', 'P1_ownSuperBar', 'P1_ownSuperCount', 
                                              'P1_ownSuperMaxCount', 'P1_ownSuperType', 'P1_ownWins', 'frame', 'stage']
-    
-    # ["stage", "P1_ownHealth","P1_oppHealth","P1_ownSide","P1_oppSide","P1_ownChar",
-    #                                     "P1_oppChar","P1_actions_move","P1_actions_attack","P1_ownStunBar","P1_oppStunBar",
-    #                                     "P1_ownWins","P1_oppWins","P1_ownStunned","P1_oppStunned","P1_ownSuperBar","P1_oppSuperBar",
-    #                                     "P1_ownSuperType","P1_oppSuperType","P1_ownSuperCount","P1_oppSuperCount","P1_ownSuperMax",
-    #                                     "P1_oppSuperMax"]
-
 
     config = {
         # Define and configure the environment
@@ -59,13 +41,16 @@ if __name__ == "__main__":
         "env_config": {
             "game_id": "sfiii3n",
             "settings": settings,
-            "wrappers_settings": wrappers_settings,
+            "wrappers_settings": wrappers_settings 
         },
+
         "train_batch_size": 200,
+
         # Use 2 rollout workers
-        "num_workers": 5,
+        "num_workers": 2,
         # Use a vectorized env with 2 sub-envs.
-        "num_envs_per_worker": 1,
+        "num_envs_per_worker": 2,
+
         # Evaluate once per training iteration.
         "evaluation_interval": 1,
         # Run evaluation on (at least) two episodes
@@ -92,8 +77,19 @@ if __name__ == "__main__":
 
     # Run it for n training iterations
     print("\nStarting training ...\n")
-    for idx in range(30000000):
+    checkpoint_dir = r"D:\RLAGENTSdesktop\RL-Agents-on-Fighting-Games\THESIS_AGENTS\A3C AGENTS\PARALLEL\saved_checkpoints"
+    for idx in range(2):
         print("Training iteration:", idx + 1)
         results = agent.train()
+        if idx % 1==0:
+            checkpoint = agent.save(checkpoint_dir)
+            print("Checkpoint saved at {}".format(checkpoint))
+
     print("\n .. training completed.")
     print("Training results:\n{}".format(pretty_print(results)))
+
+    # Return success
+    return 0
+
+if __name__ == "__main__":
+    main()
