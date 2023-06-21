@@ -1,0 +1,51 @@
+folders:
+  parent_dir: "./results/"
+  model_name: "dummy-agent-1"
+
+settings:
+  game_id: "sfiii3n"               # The game identifier (e.g., "doapp" for Dead or Alive++)
+  characters: "Ryu"           # The agent's character in the game (e.g., "Kasumi")
+  difficulty: 4                  # Difficulty level of the game
+  step_ratio: 6                  # Ratio of game frames per agent step
+  frame_shape: !!python/tuple [84, 84, 1] # The shape of the game frame to be fed as input to the agent (128x128 grayscale image)
+  continue_game: 0.0             # Probability of continuing the game after an episode is finished
+  action_space: "discrete"       # The type of action space to use (e.g., "discrete")
+  attack_but_combination: false  # Whether or not to use attack button combinations
+  char_outfits: 2                # Number of character outfits to use in the game
+  player: "Random"               # The type of opponent character (e.g., "Random")
+  show_final: false              # Whether or not to display the final game screen
+
+wrappers_settings:
+  frame_stack: 4 #--->4, was 6                # Number of consecutive frames to stack as input for the agent
+  dilation: 1                   # Frame dilation rate (skip factor)
+  actions_stack: 12  #--- was 18            # Number of past actions to include in the input (set to 0 for a dummy agent)
+  reward_normalization: true   # Whether or not to normalize rewards (set to false for a simple setup)
+  scale: true                  # Whether or not to scale input values (set to false for a simple setup)
+  exclude_image_scaling: true   # Whether or not to exclude image scaling
+  flatten: true                # Whether or not to flatten input features (set to false for a simple setup)
+  filter_keys:
+    [
+      'P1_actions_attack', 'P1_actions_move',
+      'P1_oppChar', 'P1_oppChar1', 'P1_oppHealth', 'P1_oppSide', 'P1_oppStunBar',
+      'P1_oppStunned', 'P1_oppSuperBar', 'P1_oppSuperCount', 'P1_oppSuperMaxCount',
+      'P1_oppSuperType', 'P1_oppWins', 'P1_ownChar', 'P1_ownChar1', 'P1_ownHealth', 
+      'P1_ownSide', 'P1_ownStunBar', 'P1_ownStunned', 'P1_ownSuperBar', 'P1_ownSuperCount', 
+      'P1_ownSuperMaxCount', 'P1_ownSuperType', 'P1_ownWins', 'frame', 'stage'
+    ]
+
+policy_kwargs:
+  #net_arch: [{ pi: [64, 64], vf: [32, 32] }]
+  net_arch: [64, 64]
+
+ppo_settings:
+  gamma: 0.94
+  model_checkpoint: "0M"
+  learning_rate: [2.5e-4, 2.5e-6] # To start
+  clip_range: [0.15, 0.025] # To start
+  #learning_rate: [5.0e-5, 2.5e-6] # Fine Tuning
+  #clip_range: [0.075, 0.025] # Fine Tuning
+  batch_size: 256 #8 #nminibatches gave different batch size depending on the number of environments: batch_size = (n_steps * n_envs) // nminibatches
+  n_epochs: 4
+  n_steps: 2048
+  autosave_freq: 2500000
+  time_steps: 50000000
